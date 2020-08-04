@@ -1,0 +1,43 @@
+security:
+    encoders:
+        # Our user class and the algorithm we'll use to encode passwords
+        # 'auto' means to let Symfony choose the best possible password hasher (Argon2 or Bcrypt)
+        # https://symfony.com/doc/current/security.html#c-encoding-passwords
+        App\Entity\User: 'auto'
+    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    providers:
+        users_in_memory: { memory: null }
+        database_users:
+            entity:
+                class: 'App\Entity\User'
+                property: 'email'
+    access_decision_manager:
+        strategy: unanimous
+        # this defines decision if all voters abstained from voting
+        allow_if_all_abstain: false
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            # this firewall applies to all URLs
+            pattern: ^/
+            anonymous: true
+            lazy: true
+            provider: database_users
+            json_login:
+                check_path: /login
+            logout:
+                path:   app_logout
+
+            # activate different ways to authenticate
+            # https://symfony.com/doc/current/security.html#firewalls-authentication
+
+            # https://symfony.com/doc/current/security/impersonating_user.html
+            # switch_user: true
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        # - { path: ^/admin, roles: ROLE_ADMIN }
+         - { path: ^/users, roles: ROLE_REGISTERED_USER }
