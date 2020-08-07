@@ -27,7 +27,7 @@ class User implements UserInterface, \Serializable
 
     /**
      * @var string|null
-     * @ORM\Column(type="string", nullable=false)
+     * @ORM\Column(type="string", nullable=true)
      */
     protected $password;
 
@@ -57,9 +57,15 @@ class User implements UserInterface, \Serializable
 
     /**
      * @var string|null
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="string", unique=true, nullable=true)
      */
-    protected $sessionId;
+    protected $authToken;
+
+    /**
+     * @var \DateTime|null
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    protected $authTokenCreatedDateTime;
 
     /**
      * @return int
@@ -162,18 +168,36 @@ class User implements UserInterface, \Serializable
     /**
      * @return string|null
      */
-    public function getSessionId(): ?string
+    public function getAuthToken(): ?string
     {
-        return $this->sessionId;
+        return $this->authToken;
     }
 
     /**
-     * @param string|null $sessionId
+     * @param string|null $authToken
      * @return User
      */
-    public function setSessionId(?string $sessionId): User
+    public function setAuthToken(?string $authToken): User
     {
-        $this->sessionId = $sessionId;
+        $this->authToken = $authToken;
+        return $this;
+    }
+
+    /**
+     * @return \DateTime|null
+     */
+    public function getAuthTokenCreatedDateTime(): ?\DateTime
+    {
+        return $this->authTokenCreatedDateTime;
+    }
+
+    /**
+     * @param \DateTime|null $authTokenCreatedDateTime
+     * @return User
+     */
+    public function setAuthTokenCreatedDateTime(?\DateTime $authTokenCreatedDateTime): User
+    {
+        $this->authTokenCreatedDateTime = $authTokenCreatedDateTime;
         return $this;
     }
 

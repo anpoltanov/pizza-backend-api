@@ -29,10 +29,9 @@ class ProductController extends AbstractEntityController
     /**
      * @param Request $request
      * @return array
-     *
      * @Route("", name="product_index", methods = {"GET"})
      */
-    public function handleIndexRequest(Request $request)
+    public function indexAction(Request $request)
     {
         $entities = $this->getEntityRepository()->findAll();
         $result = [
