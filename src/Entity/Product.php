@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Class Product
  * @package App\Entity
  * @ORM\Entity()
+ * @ORM\Table(name="products")
  */
 class Product
 {
@@ -29,7 +30,7 @@ class Product
 
     /**
      * @var string|null
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="text", nullable=true)
      */
     protected $description;
 

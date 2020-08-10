@@ -60,7 +60,7 @@ class JsonResponseSerializerListener implements EventSubscriberInterface
         }
         $ttl = !empty($result['ttl']) ? $result['ttl'] : 0;
         $code = !empty($result['status_code']) ? $result['status_code'] : Response::HTTP_OK;
-        $data = !empty($result['data']) ? $result['data'] : [];
+        $data = !empty($result['data']) ? $result['data'] : null;
         $responseString = $this->serializer->serialize($data);
         $response = $this->responseFactory->create($responseString);
         $response->setTtl($ttl)->setStatusCode($code);

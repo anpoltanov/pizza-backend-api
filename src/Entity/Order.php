@@ -11,7 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Class Order
  * @package App\Entity
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="App\Repository\OrderRepository")
+ * @ORM\Table(name="orders")
  */
 class Order
 {
@@ -35,10 +36,19 @@ class Order
     protected $id;
 
     /**
+     * When the order was created as a cart
      * @var \DateTime
-     * @ORM\Column(type="date", nullable=false)
+     * @ORM\Column(type="datetime", nullable=false)
      */
-    protected $dateTime;
+    protected $createdDateTime;
+
+    /**
+     * When the order was filled out and sent
+     * @var \DateTime|null
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    protected $sentDateTime;
+
 
     /**
      * @var string
@@ -67,7 +77,7 @@ class Order
 
     /**
      * @var OrderItem[]|Collection
-     * @ORM\OneToMany(targetEntity="App\Entity\OrderItem", mappedBy="order")
+     * @ORM\OneToMany(targetEntity="App\Entity\OrderItem", mappedBy="order", cascade={"persist"})
      */
     protected $orderItems;
 
@@ -88,24 +98,6 @@ class Order
     }
 
     /**
-     * @return \DateTime
-     */
-    public function getDateTime(): \DateTime
-    {
-        return $this->dateTime;
-    }
-
-    /**
-     * @param \DateTime $dateTime
-     * @return Order
-     */
-    public function setDateTime(\DateTime $dateTime): Order
-    {
-        $this->dateTime = $dateTime;
-        return $this;
-    }
-
-    /**
      * @return string
      */
     public function getStatus(): string
@@ -120,6 +112,42 @@ class Order
     public function setStatus(string $status): Order
     {
         $this->status = $status;
+        return $this;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getCreatedDateTime(): \DateTime
+    {
+        return $this->createdDateTime;
+    }
+
+    /**
+     * @param \DateTime $createdDateTime
+     * @return Order
+     */
+    public function setCreatedDateTime(\DateTime $createdDateTime): Order
+    {
+        $this->createdDateTime = $createdDateTime;
+        return $this;
+    }
+
+    /**
+     * @return \DateTime|null
+     */
+    public function getSentDateTime(): ?\DateTime
+    {
+        return $this->sentDateTime;
+    }
+
+    /**
+     * @param \DateTime|null $sentDateTime
+     * @return Order
+     */
+    public function setSentDateTime(?\DateTime $sentDateTime): Order
+    {
+        $this->sentDateTime = $sentDateTime;
         return $this;
     }
 
@@ -192,6 +220,16 @@ class Order
     public function setOrderItems($orderItems)
     {
         $this->orderItems = $orderItems;
+        return $this;
+    }
+
+    /**
+     * @param OrderItem $orderItem
+     * @return Order
+     */
+    public function addOrderItem(OrderItem $orderItem)
+    {
+        $this->orderItems->add($orderItem);
         return $this;
     }
 }

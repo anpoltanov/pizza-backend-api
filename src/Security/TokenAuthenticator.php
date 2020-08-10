@@ -55,7 +55,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-        return $request->headers->get('X-AUTH-TOKEN') ?? false;
+        return $request->headers->get('X-AUTH-TOKEN');
     }
 
     /**
@@ -65,17 +65,10 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
-        if (false === $credentials) {
-            $user = new User();
-            try {
-                $user->setAuthToken(md5(random_bytes(20) . $user->getSalt()));
-                $user->setAuthTokenCreatedDateTime(new \DateTime());
-                $this->entityManager->persist($user);
-                $this->entityManager->flush();
-            } catch (\Exception $e) {
-                throw new CustomUserMessageAuthenticationException('error.' . $e->getMessage());
-            }
-            return $user;
+        if (null === $credentials) {
+            // The token header was empty, authentication fails with HTTP Status
+            // Code 401 "Unauthorized"
+            return null;
         }
 
         // if a User is returned, checkCredentials() is called

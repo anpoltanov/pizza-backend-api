@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\Order;
+use App\Entity\User;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * Class OrderService
+ * Class UserService
  * @package App\Service
  */
-class OrderService
+class UserService
 {
     /** @var EntityManager */
     protected $em;
@@ -27,10 +27,11 @@ class OrderService
     }
 
     /**
-     * @param Order $entity
+     * @param User $entity
+     * @return User
      * @throws \Exception
      */
-    public function save(Order $entity)
+    public function save(User $entity): User
     {
         $this->em->beginTransaction();
         try {
@@ -41,19 +42,7 @@ class OrderService
             $this->em->rollback();
             throw $e;
         }
-    }
 
-    /**
-     * @param $userId
-     * @return mixed
-     */
-    public function getCart($userId)
-    {
-        $repository = $this->em->getRepository(Order::class);
-        $entity = $repository->getActualCartByUser($userId);
-        if (is_array($entity)) {
-            $entity = array_shift($entity);
-        }
         return $entity;
     }
 }

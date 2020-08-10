@@ -8,7 +8,7 @@ use App\Controller\Strategy\JsonRequestStrategy;
 use App\Controller\Strategy\RequestStrategyInterface;
 use App\Entity\Order;
 use App\Entity\User;
-use App\Hydrator\AbstractHydrator;
+use App\Hydrator\OrderHydrator;
 use App\Security\OrderVoter;
 use App\Service\OrderService;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,9 +28,9 @@ class OrderController extends AbstractEntityController
 
     /**
      * OrderController constructor.
-     * @param AbstractHydrator $hydrator
+     * @param OrderHydrator $hydrator
      */
-    public function __construct(AbstractHydrator $hydrator)
+    public function __construct(OrderHydrator $hydrator)
     {
         $this->entityClass = Order::class;
         $this->entityHydrator = $hydrator;
@@ -39,14 +39,14 @@ class OrderController extends AbstractEntityController
 
     /**
      * @param Request $request
-     * @return array
+     * @return array[]
      * @Route("", name="orders_index", methods = {"GET"})
      */
     public function indexAction(Request $request)
     {
         $userId = $this->getUserIdFromRequest($request);
         $this->denyAccessUnlessGranted(OrderVoter::INDEX, $userId);
-        $entities = $this->getEntityRepository()->findAllBy(['user' => $userId]);
+        $entities = $this->getEntityRepository()->findBy(['user' => $userId]);
         $result = [
             'data' => [],
         ];
@@ -73,23 +73,70 @@ class OrderController extends AbstractEntityController
 
     /**
      * @param Request $request
+     * @return array
+     * @throws \ReflectionException
+     * @Route("/cart", name="orders_get_cart", methods = {"GET"})
+     */
+    public function getCartAction(Request $request, OrderService $service): array
+    {
+        $entity = $service->getCart($this->getUser()->getId());
+        if ($entity instanceof Order) {
+            $this->denyAccessUnlessGranted(OrderVoter::GET, $entity);
+            return [
+                'data' => $this->entityHydrator->extract($entity),
+            ];
+        }
+        return [
+            'data' => null,
+        ];
+    }
+
+    /**
+     * @param Request $request
      * @param OrderService $orderService
      * @return array
      * @throws \Exception
-     * @Route("", name="organization_add", methods = {"POST"})
+     * @Route("", name="orders_add", methods = {"POST"})
      */
     public function addAction(Request $request, OrderService $orderService): array
     {
+        $this->denyAccessUnlessGranted(User::ROLE_USER);
         $data = $this->requestStrategy->unserializeRequestContent($request);
-        $entity = new $this->entityClass();
+        /** @var Order $entity */
+        $entity = new $this->entityClass;
+        $entity->setStatus(Order::STATUS_CART)
+            ->setUser($this->getUser())
+            ->setCreatedDateTime(new \DateTime());
         $this->entityHydrator->hydrate($data, $entity);
         $orderService->save($entity);
 
         return [
             'status_code' => Response::HTTP_CREATED,
-            'data' => [
-                'id' => $entity->getId(),
-            ],
+            'data' => $this->entityHydrator->extract($entity),
+        ];
+    }
+
+    /**
+     * @param Request $request
+     * @param OrderService $orderService
+     * @return array
+     * @throws \Exception
+     * @Route("/{id}", name="orders_edit", requirements = {"id" = "\d+"}, methods = {"PUT"})
+     */
+    public function editAction(Request $request, OrderService $orderService): array
+    {
+        $this->denyAccessUnlessGranted(User::ROLE_USER);
+        $data = $this->requestStrategy->unserializeRequestContent($request);
+        /** @var Order $entity */
+        $entity = $this->getEntityById($this->getIdFromRequest($request));
+        $this->denyAccessUnlessGranted(OrderVoter::EDIT, $entity);
+        $entity->setStatus(Order::STATUS_ORDER)
+            ->setSentDateTime(new \DateTime());
+        $this->entityHydrator->hydrate($data, $entity);
+        $orderService->save($entity);
+
+        return [
+            'data' => $this->entityHydrator->extract($entity),
         ];
     }
 

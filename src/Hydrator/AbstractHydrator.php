@@ -13,13 +13,14 @@ use Doctrine\ORM\EntityManagerInterface;
  * Class AbstractHydrator
  * @package App\Hydrator
  */
-class AbstractHydrator
+class AbstractHydrator implements HydratorStrategyInterface
 {
     /** @var array */
-    protected $excludeFields = [
-    ];
+    protected $excludeFields = [];
     /** @var EntityManager */
     protected $entityManager;
+    /** @var array  */
+    protected $strategy = [];
 
     /**
      * AbstractHydrator constructor.
@@ -50,6 +51,9 @@ class AbstractHydrator
             }
             if (method_exists($object, $getter)) {
                 $value = $object->$getter();
+                if (array_key_exists($name, $this->strategy)) {
+                    $value = $this->extractByStrategy($value, $this->strategy[$name]);
+                }
                 if (is_object($value) && !$value instanceof Collection) {
                     if (method_exists($value, 'getId')) {
                         $value = $value->getId();
@@ -71,12 +75,29 @@ class AbstractHydrator
     }
 
     /**
+     * @param $value
+     * @param array|string $strategy
+     * @return array|void
+     */
+    private function extractByStrategy($value, $strategy)
+    {
+        if (!class_exists($strategy)) {
+            throw new Exception\InvalidArgumentException('Strategy class doesnt exist');
+        }
+        $strategyInstance = new $strategy($this->entityManager);
+        if (!$strategyInstance instanceof HydratorStrategyInterface) {
+            throw new Exception\InvalidArgumentException('Cannot use provided strategy class');
+        }
+        return $strategyInstance->extract($value);
+    }
+
+    /**
      * @param array $data
      * @param object $object
      * @return object
      * @throws \ReflectionException
      */
-    public function hydrate(array $data, object $object)
+    public function hydrate(array $data, object $object): object
     {
         $classMetadata = $this->entityManager->getClassMetadata(get_class($object));
         foreach ($data as $fieldName => $fieldValue) {
@@ -137,5 +158,15 @@ class AbstractHydrator
     protected function addExcludeFields(array $excludes)
     {
         $this->excludeFields = array_merge($this->excludeFields, $excludes);
+    }
+
+    /**
+     * @param array $strategy
+     * @return $this
+     */
+    public function setStrategy(array $strategy)
+    {
+        $this->strategy = $strategy;
+        return $this;
     }
 }

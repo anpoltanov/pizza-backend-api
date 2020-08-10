@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Class OrderItem
  * @package App\Entity
  * @ORM\Entity()
+ * @ORM\Table(name="order_items")
  */
 class OrderItem
 {

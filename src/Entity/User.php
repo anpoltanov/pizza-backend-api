@@ -11,11 +11,13 @@ use Symfony\Component\Security\Core\User\UserInterface;
  * Class User
  * @package App\Entity
  * @ORM\Entity()
+ * @ORM\Table(name="users")
  */
 class User implements UserInterface, \Serializable
 {
     const ROLE_ANONYMOUS_USER = 'ROLE_ANONYMOUS_USER';
     const ROLE_REGISTERED_USER = 'ROLE_REGISTERED_USER';
+    const ROLE_USER = 'ROLE_USER';
 
     /**
      * @var int

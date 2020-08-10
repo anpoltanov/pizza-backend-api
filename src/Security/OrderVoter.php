@@ -17,6 +17,7 @@ class OrderVoter extends Voter
 {
     const INDEX = 'order.index';
     const GET = 'order.get';
+    const EDIT = 'order.edit';
 
     /**
      * @param string $attribute
@@ -25,7 +26,7 @@ class OrderVoter extends Voter
      */
     protected function supports($attribute, $subject)
     {
-        if (in_array($attribute, [self::GET,]) && $subject instanceof Order) {
+        if (in_array($attribute, [self::GET, self::EDIT]) && $subject instanceof Order) {
             return true;
         }
 
@@ -54,6 +55,8 @@ class OrderVoter extends Voter
         switch ($attribute) {
             case self::GET:
                 return $this->canView($subject, $user);
+            case self::EDIT:
+                return $this->canEdit($subject, $user);
             case self::INDEX:
                 return $this->canIndex($subject, $user);
         }
@@ -69,6 +72,16 @@ class OrderVoter extends Voter
     final protected function canView(Order $order, User $user)
     {
         return $order->getUser()->getId() === $user->getId();
+    }
+
+    /**
+     * @param Order $order
+     * @param User $user
+     * @return bool
+     */
+    final protected function canEdit(Order $order, User $user)
+    {
+        return $order->getUser()->getId() === $user->getId() && $order->getStatus() === Order::STATUS_CART;
     }
 
     /**
