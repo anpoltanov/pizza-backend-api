@@ -1,5 +1,5 @@
 # pizza-backend-api
-This is a test task for Innoscripta GmbH. 
+This is a test task for Innoscripta GmbH. The estimated duration for the task completion is 7 days.
 The goal was to make simple and scalable application with functions of menu page, product cart, calculating total and placing orders, orders history for authenticated users, currency switching.
 The application consists of 2 separate parts which are backend API and frontend application.
 
